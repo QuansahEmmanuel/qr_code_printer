@@ -75,7 +75,7 @@ function renderBarcodes() {
 
     const card = document.createElement("div");
     card.className =
-      "bg-white py-4 w-80 shadow flex flex-col items-center border";
+      "bg-white py-4 md:w-80 px-2 md:px-0 shadow flex flex-col items-center border";
 
     const label = document.createElement("p");
     label.textContent = `BIN - ${bin}`;
