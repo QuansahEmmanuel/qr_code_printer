@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QR Code Printer</title>
+
+    <!-- libs or plugins  -->
+    <script src="/vendor/tailwindcss.js"></script>
+    <script src="/vendor/qrcode.min.js"></script>
+    <link rel="stylesheet" href="/vendor/iziToast.min.css">
+    <script src="/vendor/iziToast.min.js"></script>
+    <link rel="stylesheet" href="/vendor/daisyui@5.css">
+
+
+
+</head>
+
+<body class="min-h-screen bg-gray-100 flex flex-col">
+    <!-- Input Section -->
+    <div class="flex justify-center mt-10">
+        <div class="bg-white shadow-md rounded-xl p-6 w-full max-w-lg">
+            <h1 class="text-2xl font-semibold text-gray-700 text-center mb-6">
+                QR Code Printer
+            </h1>
+
+            <div class="space-y-4">
+                <!-- Bin Number Input -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-2">Enter Bin Number</label>
+                    <div class="flex gap-2">
+                        <input type="text" placeholder="e.g. 001" id="input"
+                            class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                        <button id="add_bin_button"
+                            class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 rounded-lg transition duration-200">
+                            <img src="/icons/basil--add-outline.png" alt="Print" class="h-5 ">
+                            Add</button>
+                    </div>
+                </div>
+
+                <!-- Size Dropdown -->
+                <!-- <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-2">Select Size</label>
+                    <select
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Choose Size</option>
+                        <option value="S">Small (S)</option>
+                        <option value="M">Medium (M)</option>
+                        <option value="L">Large (L)</option>
+                    </select>
+                </div> -->
+            </div>
+        </div>
+    </div>
+
+    <!-- QR List Section -->
+    <div class="mt-10  border border-4 mx-10">
+        <div class="flex flex-wrap items-center justify-between mb-4 border border-b-4 p-4">
+            <h3 class="text-lg font-semibold text-gray-700">List of QR Codes</h3>
+            <div class="flex gap-3">
+                <button
+                    class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow transition">
+                    <img src="/icons/streamline-cyber--printer-3.png" alt="Print" class="h-5">
+                    Print
+                </button>
+                <button
+                    class="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow transition">
+                    <img src="/icons/proicons--cancel-square.png" alt="Clear" class="h-5">
+                    Clear
+                </button>
+            </div>
+        </div>
+
+        <!-- QR Code Cards-->
+        <div class="flex flex-wrap justify-center gap-6 p-6 " id="qrList">
+            <!-- Example Card -->
+
+        </div>
+    </div>
+
+    <!-- Clear All Modal -->
+    <dialog id="clearAllModal" class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg text-red-600 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
+                </svg>
+                Confirm Clear
+            </h3>
+            <p class="py-3 text-gray-600">
+                This action will remove <b>all barcodes</b> permanently. Are you sure you want to continue?
+            </p>
+            <div class="modal-action">
+                <button id="confirmClearBtn" class="btn btn-error text-white">Yes, Clear All</button>
+                <button class="btn" onclick="document.getElementById('clearAllModal').close()">Cancel</button>
+            </div>
+        </div>
+    </dialog>
+
+
+    <!-- Footer Section -->
+    <footer class="mt-auto bg-gray-900 text-gray-200 py-6">
+        <div class="container mx-auto text-center space-y-2">
+            <p class="text-sm tracking-wide">
+                © <span id="currentYear"></span> <span class="font-semibold text-blue-400">Middle_Code</span> — All
+                Rights Reserved.
+            </p>
+            <p class="text-xs text-gray-400">
+                Designed & Developed by <span class="text-blue-400 font-medium">Middle_Code</span>
+            </p>
+        </div>
+    </footer>
+
+
+    <script src="main.js"></script>
+</body>
+
+</html>
