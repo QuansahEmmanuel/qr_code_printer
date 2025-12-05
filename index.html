@@ -4,107 +4,505 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>QR Code Printer</title>
+    <title>QR Code Manager Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.min.js"></script>
+    <style>
+        /* Animations */
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
 
-    <!-- libs or plugins  -->
-    <script src="/vendor/tailwindcss.js"></script>
-    <script src="/vendor/qrcode.min.js"></script>
-    <link rel="stylesheet" href="/vendor/iziToast.min.css">
-    <script src="/vendor/iziToast.min.js"></script>
-    <link rel="stylesheet" href="/vendor/daisyui@5.css">
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
+        @keyframes pulse {
 
+            0%,
+            100% {
+                opacity: 1;
+            }
 
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .card-enter {
+            animation: slideInUp 0.4s ease-out forwards;
+        }
+
+        /* Background */
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+        }
+
+        /* Universal Glass Effect */
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Glass Input */
+        input.glass-input {
+            background: rgba(255, 255, 255, 0.12) !important;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            color: #f1f5f9 !important;
+            border-radius: 16px !important;
+            padding: 14px 20px !important;
+            font-size: 1rem !important;
+        }
+
+        input.glass-input::placeholder {
+            color: rgba(241, 245, 249, 0.6) !important;
+        }
+
+        input.glass-input:focus {
+            border-color: rgba(168, 85, 247, 0.5) !important;
+            box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2) !important;
+            outline: none;
+        }
+
+        /* Glass Button */
+        .btn-glass {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: white;
+            font-weight: 600;
+            border-radius: 16px;
+            padding: 12px 24px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-glass:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* QR Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+            color: #e2e8f0;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-6px) rotateX(1deg);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        /* Stat Cards */
+        .stat-card {
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Modal Glass */
+        #clearModal .modal-glass {
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #f1f5f9;
+            border-radius: 24px;
+        }
+
+        #clearModal .modal-glass h3,
+        #clearModal .modal-glass p,
+        #clearModal .modal-glass strong {
+            color: #f1f5f9 !important;
+        }
+
+        /* QR Container (keep white for scanning) */
+        .qr-container-style {
+            background: white !important;
+            border-radius: 12px;
+            padding: 4px;
+        }
+
+        /* Empty state text */
+        .empty-state+h3,
+        .empty-state+p {
+            color: #cbd5e1 !important;
+        }
+    </style>
 </head>
 
-<body class="min-h-screen bg-gray-100 flex flex-col">
-    <!-- Input Section -->
-    <div class="flex justify-center md:mt-10">
-        <div class="bg-white shadow-md rounded-xl p-6 w-full max-w-lg">
-            <h1 class="text-2xl font-semibold text-gray-700 text-center mb-6">
-                QR Code Printer
-            </h1>
+<body class="min-h-screen gradient-bg text-white">
+    <div class="container mx-auto px-4 pt-8">
+        <div class="text-center mb-8">
+            <h1 class="text-5xl font-bold mb-3 tracking-tight">QR Code Printer</h1>
+            <p class="text-xl opacity-90">Enterprise-Grade Barcode Printing Solution</p>
+        </div>
 
-            <div class="space-y-4">
-                <!-- Bin Number Input -->
-                <div class="p-2">
-                    <label class="block text-sm font-medium text-gray-600 mb-2">Enter Bin Number</label>
-                    <div class="flex flex-wrap md:flex-nowrap gap-2">
-                        <input type="text" placeholder="e.g. 001" id="input"
-                            class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                        <button id="add_bin_button"
-                            class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded-lg transition duration-200 w-full md:w-auto">
-                            <img src="/icons/basil--add-outline.png" alt="Print" class="h-5 ">
-                            Add</button>
+        <!-- Stats -->
+        <div id="statsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 max-w-5xl mx-auto">
+            <div class="stat-card rounded-2xl p-6 text-white shadow-xl">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-80 uppercase tracking-wide">Total Codes</p>
+                        <p id="totalCodes" class="text-4xl font-bold mt-1">0</p>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-full p-4">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card rounded-2xl p-6 text-white shadow-xl">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-80 uppercase tracking-wide">Last Added</p>
+                        <p id="lastAdded" class="text-2xl font-bold mt-1">None</p>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-full p-4">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card rounded-2xl p-6 text-white shadow-xl">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-80 uppercase tracking-wide">Status</p>
+                        <p class="text-2xl font-bold mt-1">Ready</p>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-full p-4">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- QR List Section -->
-    <div class="mt-10 mb-10   border border-4 mx-10">
-        <div
-            class="flex flex-wrap items-center justify-center gap-6 md:gap-0  md:justify-between mb-4 border border-b-4 p-4">
-            <h3 class="text-lg font-semibold text-gray-700">List of QR Codes</h3>
-            <div class="flex gap-3">
-                <button
-                    class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow transition">
-                    <img src="/icons/streamline-cyber--printer-3.png" alt="Print" class="h-5">
-                    Print
-                </button>
-                <button
-                    class="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow transition">
-                    <img src="/icons/proicons--cancel-square.png" alt="Clear" class="h-5">
-                    Clear
-                </button>
+        <!-- Add Code Form -->
+        <div class="flex justify-center mb-8">
+            <div class="glassmorphism rounded-3xl shadow-2xl p-8 w-full max-w-2xl">
+                <div class="flex items-center justify-center mb-6">
+                    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full p-3 mr-4">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                    </div>
+                    <h2 class="text-3xl font-bold">Generate New Code</h2>
+                </div>
+
+                <div class="space-y-5">
+                    <div class="grid md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block font-semibold mb-2 text-sm uppercase tracking-wide">
+                                Bin Number <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="binNumber" maxlength="10" class="glass-input w-full"
+                                placeholder="Enter BIN" />
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-2 text-sm uppercase tracking-wide">
+                                Cut Number
+                            </label>
+                            <input type="text" id="cutNumber" maxlength="10" class="glass-input w-full"
+                                placeholder="Optional" />
+                        </div>
+                    </div>
+
+                    <button id="add_bin_button"
+                        class="btn-glass w-full bg-gradient-to-r from-purple-600/90 to-indigo-600/90 hover:from-purple-700 hover:to-indigo-700 text-white text-lg font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-3">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span>Add to Queue</span>
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- QR Code Cards-->
-        <div class="flex flex-wrap justify-center gap-6 p-6 " id="qrList">
-            <!-- Example Card -->
+        <!-- QR List -->
+        <div class="glassmorphism rounded-3xl shadow-2xl p-8 mb-8 max-w-7xl mx-auto">
+            <div class="flex flex-wrap items-center justify-between mb-8 pb-6 border-b border-gray-600">
+                <div class="flex items-center gap-3 mb-4 md:mb-0">
+                    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full p-2">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold">Generated Codes</h3>
+                </div>
+                <div class="flex gap-3 justify-between w-full md:w-auto">
+                    <button id="printBtn"
+                        class="btn-glass flex items-center gap-2 bg-emerald-500/90 hover:bg-emerald-600 text-white font-semibold px-6 py-3 rounded-xl shadow-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                        </svg>
+                        Print All
+                    </button>
+                    <button id="clearBtn"
+                        class="btn-glass flex items-center gap-2 bg-red-500/90 hover:bg-red-600 text-white font-semibold px-6 py-3 rounded-xl shadow-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Clear All
+                    </button>
+                </div>
+            </div>
 
+            <div id="qrList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
         </div>
     </div>
 
-    <!-- Clear All Modal -->
-    <dialog id="clearAllModal" class="modal">
-        <div class="modal-box">
-            <h3 class="font-bold text-lg text-red-600 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
-                </svg>
-                Confirm Clear
-            </h3>
-            <p class="py-3 text-gray-600">
-                This action will remove <b>all barcodes</b> permanently. Are you sure you want to continue?
+    <!-- Clear Confirmation Modal -->
+    <div id="clearModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="modal-glass max-w-md w-full p-8">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="bg-red-100 rounded-full p-3">
+                    <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold">Confirm Clear</h3>
+            </div>
+            <p class="mb-8 text-lg">
+                This action will permanently remove <strong>all generated codes</strong>. This cannot be undone.
             </p>
-            <div class="modal-action">
-                <button id="confirmClearBtn" class="btn btn-error text-white">Yes, Clear All</button>
-                <button class="btn" onclick="document.getElementById('clearAllModal').close()">Cancel</button>
+            <div class="flex gap-4">
+                <button id="confirmClearBtn"
+                    class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-xl transition-all">
+                    Yes, Clear All
+                </button>
+                <button id="cancelClearBtn"
+                    class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-xl transition-all">
+                    Cancel
+                </button>
             </div>
         </div>
-    </dialog>
+    </div>
 
-
-    <!-- Footer Section -->
-    <footer class="mt-auto bg-gray-900 text-gray-200 py-6">
-        <div class="container mx-auto text-center space-y-2">
-            <p class="text-sm tracking-wide">
-                © <span id="currentYear"></span> <span class="font-semibold text-blue-400">Middle_Code</span> — All
-                Rights Reserved.
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-300 py-8 mt-12">
+        <div class="container mx-auto text-center">
+            <p class="text-sm mb-2">
+                © <span id="currentYear"></span> <span class="font-bold text-purple-400">Middle_Code Technologies</span>
+                — Enterprise Solutions
             </p>
-            <p class="text-xs text-gray-400">
-                Designed & Developed by <span class="text-blue-400 font-medium">Middle_Code</span>
+            <p class="text-xs opacity-75">
+                Professional QR Printing Solution v2.0
             </p>
         </div>
     </footer>
 
+    <script>
+        // Toast helpers
+        const showToast = (type, message) => {
+            iziToast[type]({
+                title: type === 'success' ? 'Success' : 'Error',
+                message: message,
+                position: 'topRight',
+                timeout: 3000
+            });
+        };
 
-    <script src="main.js"></script>
+        let qrCodes = [];
+
+        function updateStats() {
+            document.getElementById('totalCodes').textContent = qrCodes.length;
+            if (qrCodes.length > 0) {
+                const lastCode = qrCodes[qrCodes.length - 1];
+                const displayLabel = lastCode.cut ? `${lastCode.bin} / ${lastCode.cut}` : lastCode.bin;
+                document.getElementById('lastAdded').textContent = displayLabel;
+            } else {
+                document.getElementById('lastAdded').textContent = 'None';
+            }
+        }
+
+        function addBin() {
+            const binInput = document.getElementById('binNumber');
+            const cutInput = document.getElementById('cutNumber');
+
+            let binNum = binInput.value.trim().replace(/\D/g, '');
+            let cutNum = cutInput.value.trim();
+
+            binInput.value = binNum;
+            cutInput.value = cutNum;
+
+            if (!binNum) {
+                showToast('error', 'Bin Number is required!');
+                binInput.focus();
+                return;
+            }
+
+            const formattedBin = 'BIN' + binNum;
+            const formattedCut = cutNum ? 'Cut ' + cutNum : '';
+            const qrCodeData = formattedBin.replace('BIN-', 'BIN');
+
+            const newCode = { bin: formattedBin, cut: formattedCut, data: qrCodeData };
+            qrCodes.push(newCode);
+
+            showToast('success', `${newCode.bin}${newCode.cut ? ' / ' + newCode.cut : ''} added successfully!`);
+            renderQRCodes();
+            updateStats();
+
+            binInput.value = '';
+            cutInput.value = '';
+            binInput.focus();
+        }
+
+        function renderQRCodes() {
+            const container = document.getElementById('qrList');
+            container.innerHTML = '';
+
+            if (qrCodes.length === 0) {
+                container.innerHTML = `
+          <div class="col-span-full text-center py-16 text-white">
+            <div class="empty-state inline-block bg-gray-700 rounded-full p-8 mb-4">
+              <svg class="w-16 h-16 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+              </svg>
+            </div>
+            <h3 class="text-2xl font-bold mb-2">No Codes Generated</h3>
+            <p class="text-gray-400">Add a BIN number above to get started</p>
+          </div>
+        `;
+                return;
+            }
+
+            qrCodes.forEach((item, index) => {
+                const displayLabel = item.cut ? `${item.bin} / ${item.cut}` : item.bin;
+                const card = document.createElement('div');
+                card.className = 'glass-card card-enter rounded-2xl p-6 flex flex-col items-center';
+                card.style.animationDelay = `${index * 0.05}s`;
+
+                const label = document.createElement('p');
+                label.className = 'text-lg font-bold mb-3 text-center break-words';
+                label.textContent = `BIN - ${displayLabel}`;
+
+                const qrContainer = document.createElement('div');
+                qrContainer.className = 'w-32 h-32 qr-container-style rounded-xl flex items-center justify-center mb-4 border border-gray-200';
+                qrContainer.id = `qr-${index}`;
+                new QRCode(qrContainer, { text: item.data, width: 120, height: 120 });
+
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'btn-glass w-full bg-red-500/90 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2 mt-2';
+                removeBtn.innerHTML = `
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+          Remove
+        `;
+                removeBtn.onclick = () => {
+                    qrCodes.splice(index, 1);
+                    renderQRCodes();
+                    updateStats();
+                    showToast('success', 'Code removed successfully!');
+                };
+
+                card.appendChild(label);
+                card.appendChild(qrContainer);
+                card.appendChild(removeBtn);
+                container.appendChild(card);
+            });
+        }
+
+        function printAll() {
+            if (qrCodes.length === 0) {
+                showToast('error', 'No codes to print!');
+                return;
+            }
+
+            let printHTML = `<html><head><title>QR Code Print</title><style>*{margin:0;padding:0;}body{font-family:Arial,sans-serif;}.qr-item{display:inline-block;width:200px;height:140px;border:2px solid #000;background:#fff;padding:6px 8px;margin:8px;text-align:center;page-break-inside:avoid;vertical-align:top;}.bin-label{font-size:13px;margin-bottom:6px;font-weight:600;}.qr-item img{width:100px;height:100px;margin:0 auto;display:block;}</style></head><body>`;
+
+            qrCodes.forEach((item, index) => {
+                const displayLabel = item.cut ? `${item.bin} / ${item.cut}` : item.bin;
+                const canvas = document.querySelector(`#qrList #qr-${index} canvas`);
+                if (canvas) {
+                    const imgData = canvas.toDataURL('image/png');
+                    printHTML += `<div class="qr-item"><p class="bin-label">BIN - ${displayLabel}</p><img src="${imgData}" alt="${item.data}"></div>`;
+                }
+            });
+
+            printHTML += `</body></html>`;
+
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printHTML);
+            printWindow.document.close();
+            setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+            }, 250);
+        }
+
+        function clearAll() {
+            if (qrCodes.length === 0) {
+                showToast('error', 'No codes to clear!');
+                return;
+            }
+            const modal = document.getElementById('clearModal');
+            modal.classList.remove('hidden');
+            document.getElementById('confirmClearBtn').onclick = () => {
+                qrCodes = [];
+                renderQRCodes();
+                updateStats();
+                modal.classList.add('hidden');
+                showToast('success', 'All codes cleared!');
+            };
+            document.getElementById('cancelClearBtn').onclick = () => {
+                modal.classList.add('hidden');
+            };
+        }
+
+        document.getElementById('add_bin_button').addEventListener('click', addBin);
+        document.getElementById('binNumber').addEventListener('keypress', e => e.key === 'Enter' && addBin());
+        document.getElementById('cutNumber').addEventListener('keypress', e => e.key === 'Enter' && addBin());
+        document.getElementById('printBtn').addEventListener('click', printAll);
+        document.getElementById('clearBtn').addEventListener('click', clearAll);
+
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+        renderQRCodes();
+        updateStats();
+    </script>
 </body>
 
 </html>
