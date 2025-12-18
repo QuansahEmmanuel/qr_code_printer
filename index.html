@@ -7,6 +7,11 @@
     <title>QR Code Printer</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.min.js"></script>
@@ -50,34 +55,73 @@
             animation: slideInUp 0.4s ease-out forwards;
         }
 
+        /* Theme Variables */
+        :root {
+            --bg-start: #f8fafc;
+            --bg-end: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --glass-shadow: rgba(0, 0, 0, 0.1);
+            --input-bg: rgba(255, 255, 255, 0.8);
+            --input-border: rgba(203, 213, 225, 0.8);
+            --input-text: #0f172a;
+            --input-placeholder: #94a3b8;
+            --stat-bg: rgba(255, 255, 255, 0.6);
+            --modal-bg: rgba(255, 255, 255, 0.95);
+            --modal-text-primary: #0f172a;
+        }
+
+        .dark {
+            --bg-start: #0f172a;
+            --bg-end: #1e293b;
+            --text-main: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.9);
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --glass-shadow: rgba(0, 0, 0, 0.3);
+            --input-bg: rgba(255, 255, 255, 0.12);
+            --input-border: rgba(255, 255, 255, 0.15);
+            --input-text: #f1f5f9;
+            --input-placeholder: rgba(241, 245, 249, 0.6);
+            --stat-bg: rgba(255, 255, 255, 0.07);
+            --modal-bg: rgba(30, 41, 59, 0.9);
+            --modal-text-primary: #f1f5f9;
+        }
+
         /* Background */
         .gradient-bg {
-            background: linear-gradient(135deg, #0f172a, #1e293b);
+            background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+            color: var(--text-main);
+            transition: background 0.5s ease, color 0.5s ease;
         }
 
         /* Universal Glass Effect */
         .glassmorphism {
-            background: rgba(255, 255, 255, 0.08);
+            background: var(--glass-bg);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px var(--glass-shadow);
+            transition: all 0.3s ease;
         }
 
         /* Glass Input */
         input.glass-input {
-            background: rgba(255, 255, 255, 0.12) !important;
+            background: var(--input-bg) !important;
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.15) !important;
-            color: #f1f5f9 !important;
+            border: 1px solid var(--input-border) !important;
+            color: var(--input-text) !important;
             border-radius: 16px !important;
             padding: 14px 20px !important;
             font-size: 1rem !important;
+            transition: all 0.3s ease;
         }
 
         input.glass-input::placeholder {
-            color: rgba(241, 245, 249, 0.6) !important;
+            color: var(--input-placeholder) !important;
         }
 
         input.glass-input:focus {
@@ -88,10 +132,10 @@
 
         /* Glass Button */
         .btn-glass {
-            background: rgba(255, 255, 255, 0.12);
+            background: var(--glass-bg);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            border: 1px solid var(--glass-border);
             color: white;
             font-weight: 600;
             border-radius: 16px;
@@ -100,51 +144,52 @@
         }
 
         .btn-glass:hover {
-            background: rgba(255, 255, 255, 0.2);
+            filter: brightness(1.1);
             transform: translateY(-2px);
         }
 
         /* QR Card */
         .glass-card {
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--glass-bg);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-            color: #e2e8f0;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 6px 20px var(--glass-shadow);
+            color: var(--text-main);
             border-radius: 20px;
             transition: all 0.3s ease;
         }
 
         .glass-card:hover {
             transform: translateY(-6px) rotateX(1deg);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
         }
 
         /* Stat Cards */
         .stat-card {
-            background: rgba(255, 255, 255, 0.07);
+            background: var(--stat-bg);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 6px 16px var(--glass-shadow);
             animation: fadeIn 0.5s ease-out;
+            color: var(--text-main);
         }
 
         /* Modal Glass */
         #clearModal .modal-glass {
-            background: rgba(30, 41, 59, 0.9);
+            background: var(--modal-bg);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #f1f5f9;
+            border: 1px solid var(--glass-border);
+            color: var(--modal-text-primary);
             border-radius: 24px;
         }
 
         #clearModal .modal-glass h3,
         #clearModal .modal-glass p,
         #clearModal .modal-glass strong {
-            color: #f1f5f9 !important;
+            color: var(--modal-text-primary) !important;
         }
 
         /* QR Container (keep white for scanning) */
@@ -157,27 +202,43 @@
         /* Empty state text */
         .empty-state+h3,
         .empty-state+p {
-            color: #cbd5e1 !important;
+            color: var(--text-muted) !important;
         }
     </style>
 </head>
 
-<body class="min-h-screen gradient-bg text-white">
+<body class="min-h-screen gradient-bg transition-colors duration-300">
     <div class="container mx-auto px-4 pt-8">
         <div class="text-center mb-8">
-            <h1 class="text-5xl font-bold mb-3 tracking-tight">QR Code Printer</h1>
+            <div class="flex items-center justify-center gap-4">
+                <h1 class="text-5xl font-bold mb-3 tracking-tight">QR Code Printer</h1>
+                <button id="themeToggle"
+                    class="p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+                    aria-label="Toggle Dark Mode">
+                    <svg class="w-8 h-8 hidden dark:block text-yellow-300" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <svg class="w-8 h-8 block dark:hidden text-slate-700" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                </button>
+            </div>
             <p class="text-xl opacity-90">Enterprise-Grade Barcode Printing Solution</p>
         </div>
 
         <!-- Stats -->
         <div id="statsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 max-w-5xl mx-auto">
-            <div class="stat-card rounded-2xl p-6 text-white shadow-xl">
+            <div class="stat-card rounded-2xl p-6 shadow-xl transition-colors">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm opacity-80 uppercase tracking-wide">Total Codes</p>
                         <p id="totalCodes" class="text-4xl font-bold mt-1">0</p>
                     </div>
-                    <div class="bg-white bg-opacity-20 rounded-full p-4">
+                    <div class="bg-slate-200 dark:bg-white/20 rounded-full p-4 transition-colors">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
@@ -186,13 +247,13 @@
                 </div>
             </div>
 
-            <div class="stat-card rounded-2xl p-6 text-white shadow-xl">
+            <div class="stat-card rounded-2xl p-6 shadow-xl transition-colors">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm opacity-80 uppercase tracking-wide">Last Added</p>
                         <p id="lastAdded" class="text-2xl font-bold mt-1">None</p>
                     </div>
-                    <div class="bg-white bg-opacity-20 rounded-full p-4">
+                    <div class="bg-slate-200 dark:bg-white/20 rounded-full p-4 transition-colors">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -201,13 +262,13 @@
                 </div>
             </div>
 
-            <div class="stat-card rounded-2xl p-6 text-white shadow-xl">
+            <div class="stat-card rounded-2xl p-6 shadow-xl transition-colors">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm opacity-80 uppercase tracking-wide">Status</p>
                         <p class="text-2xl font-bold mt-1">Ready</p>
                     </div>
-                    <div class="bg-white bg-opacity-20 rounded-full p-4">
+                    <div class="bg-slate-200 dark:bg-white/20 rounded-full p-4 transition-colors">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -503,6 +564,27 @@
         document.getElementById('currentYear').textContent = new Date().getFullYear();
         renderQRCodes();
         updateStats();
+
+        // Theme Toggle Logic
+        const themeToggleBtn = document.getElementById('themeToggle');
+        const html = document.documentElement;
+
+        // Check local storage or system preference
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.theme = 'light';
+            } else {
+                html.classList.add('dark');
+                localStorage.theme = 'dark';
+            }
+        });
     </script>
 </body>
 
