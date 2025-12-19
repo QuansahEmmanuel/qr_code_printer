@@ -324,7 +324,8 @@
 
         <!-- QR List -->
         <div class="glassmorphism rounded-3xl shadow-2xl p-8 mb-8 max-w-7xl mx-auto">
-            <div class="flex flex-wrap items-center justify-between mb-8 pb-6 border-b border-gray-600">
+            <div
+                class="flex flex-wrap items-center justify-between mb-8 pb-6 border-b border-slate-200 dark:border-gray-700 transition-colors">
                 <div class="flex items-center gap-3 mb-4 md:mb-0">
                     <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full p-2">
                         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -387,13 +388,15 @@
     </div>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-gray-300 py-8 mt-12">
+    <footer
+        class="mt-12 py-8 border-t border-slate-200 dark:border-white/10 bg-slate-100/50 dark:bg-slate-900/50 backdrop-blur-sm transition-colors">
         <div class="container mx-auto text-center">
-            <p class="text-sm mb-2">
-                © <span id="currentYear"></span> <span class="font-bold text-purple-400">Middle_Code Technologies</span>
+            <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">
+                © <span id="currentYear"></span> <span
+                    class="font-bold text-purple-600 dark:text-purple-400">Middle_Code Technologies</span>
                 — Enterprise Solutions
             </p>
-            <p class="text-xs opacity-75">
+            <p class="text-xs text-slate-500 dark:text-slate-500">
                 Professional QR Printing Solution v2.0
             </p>
         </div>
@@ -461,14 +464,14 @@
 
             if (qrCodes.length === 0) {
                 container.innerHTML = `
-          <div class="col-span-full text-center py-16 text-white">
-            <div class="empty-state inline-block bg-gray-700 rounded-full p-8 mb-4">
-              <svg class="w-16 h-16 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="col-span-full text-center py-16 text-slate-600 dark:text-slate-200">
+            <div class="empty-state inline-block bg-slate-200 dark:bg-slate-800 rounded-full p-8 mb-4 transition-colors">
+              <svg class="w-16 h-16 text-slate-400 dark:text-slate-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
               </svg>
             </div>
             <h3 class="text-2xl font-bold mb-2">No Codes Generated</h3>
-            <p class="text-gray-400">Add a BIN number above to get started</p>
+            <p class="text-slate-500 dark:text-slate-400">Add a BIN number above to get started</p>
           </div>
         `;
                 return;
