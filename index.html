@@ -605,7 +605,7 @@
                 label.textContent = `BIN - ${displayLabel}`;
 
                 const qrContainer = document.createElement('div');
-                qrContainer.className = 'w-32 h-32 qr-container-style rounded-xl flex items-center justify-center mb-4 border border-gray-200';
+                qrContainer.className = 'w-32 h-32 qr-container-style rounded-sm flex items-center justify-center mb-4 border border-gray-200';
                 qrContainer.id = `qr-${index}`;
                 new QRCode(qrContainer, { text: item.data, width: 120, height: 120 });
 
