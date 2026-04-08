@@ -51,6 +51,32 @@
             }
         }
 
+        @keyframes pulsePaste {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .animate-paste {
+            animation: pulsePaste 0.3s ease-out;
+        }
+
+        .icon-btn-click:active,
+        .icon-btn-active {
+            transform: translateY(-50%) scale(0.75) !important;
+            background: rgba(168, 85, 247, 0.25) !important;
+            opacity: 1 !important;
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+        }
+
         .card-enter {
             animation: slideInUp 0.4s ease-out forwards;
         }
@@ -140,12 +166,16 @@
             font-weight: 600;
             border-radius: 16px;
             padding: 12px 24px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .btn-glass:hover {
             filter: brightness(1.1);
             transform: translateY(-2px);
+        }
+
+        .btn-glass:active {
+            transform: translateY(4px) scale(0.98) !important;
         }
 
         /* QR Card */
@@ -216,7 +246,7 @@
                 </a>
                 <h1 class="text-5xl font-bold mb-3 tracking-tight">QR Code Printer</h1>
                 <button id="themeToggle"
-                    class="p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+                    class="p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-all duration-150 active:scale-75 active:rotate-12"
                     aria-label="Toggle Dark Mode">
                     <svg class="w-8 h-8 hidden dark:block text-yellow-300" fill="none" stroke="currentColor"
                         viewBox="0 0 24 24">
@@ -295,27 +325,49 @@
 
                 <div class="space-y-5">
                     <div class="grid md:grid-cols-2 gap-5">
-                        <div>
+                        <div class="relative group">
                             <label class="block font-semibold mb-2 text-sm uppercase tracking-wide">
                                 Bin Number <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" id="binNumber" maxlength="10" class="glass-input w-full"
-                                placeholder="Enter BIN" />
+                            <div class="relative">
+                                <input type="text" id="binNumber" maxlength="10" class="glass-input w-full pr-12"
+                                    placeholder="Enter BIN" />
+                                <button id="pasteBinBtn" type="button"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl hover:bg-white/10 dark:hover:bg-white/20 transition-all opacity-40 hover:opacity-100 icon-btn-click"
+                                    title="Paste from clipboard">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
-                        <div>
+                        <div class="relative group">
                             <label class="block font-semibold mb-2 text-sm uppercase tracking-wide">
                                 Cut Number
                             </label>
-                            <input type="text" id="cutNumber" maxlength="10" class="glass-input w-full"
-                                placeholder="Optional" />
+                            <div class="relative">
+                                <input type="text" id="cutNumber" maxlength="10" class="glass-input w-full pr-12"
+                                    placeholder="Optional" />
+                                <button id="pasteCutBtn" type="button"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl hover:bg-white/10 dark:hover:bg-white/20 transition-all opacity-40 hover:opacity-100 icon-btn-click"
+                                    title="Paste from clipboard">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
                     <button id="add_bin_button"
-                        class="btn-glass w-full bg-gradient-to-r from-purple-600/90 to-indigo-600/90 hover:from-purple-700 hover:to-indigo-700 text-white text-lg font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-3">
+                        class="btn-glass w-full bg-gradient-to-r from-purple-600/90 to-indigo-600/90 hover:from-purple-700 hover:to-indigo-700 text-white text-lg font-bold py-4 rounded-xl active:translate-y-[4px] active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-3">
+
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                         </svg>
+
                         <span>Add to Queue</span>
                     </button>
                 </div>
@@ -376,11 +428,11 @@
             </p>
             <div class="flex gap-4">
                 <button id="confirmClearBtn"
-                    class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-xl transition-all">
+                    class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-xl transition-all duration-150 active:translate-y-[4px] active:scale-[0.98]">
                     Yes, Clear All
                 </button>
                 <button id="cancelClearBtn"
-                    class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-xl transition-all">
+                    class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-xl transition-all duration-150 active:translate-y-[4px] active:scale-[0.98]">
                     Cancel
                 </button>
             </div>
@@ -493,7 +545,7 @@
                 new QRCode(qrContainer, { text: item.data, width: 120, height: 120 });
 
                 const removeBtn = document.createElement('button');
-                removeBtn.className = 'btn-glass w-full bg-red-500/90 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2 mt-2';
+                removeBtn.className = 'btn-glass w-full bg-red-500/90 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2 mt-2 active:translate-y-[4px] active:scale-[0.98] transition-all duration-150';
                 removeBtn.innerHTML = `
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -560,6 +612,47 @@
                 modal.classList.add('hidden');
             };
         }
+
+        // Enhanced Paste Functionality (Auto + Manual)
+        const setupPasteButton = (btnId, inputId) => {
+            const input = document.getElementById(inputId);
+            const btn = document.getElementById(btnId);
+
+            const performPaste = async () => {
+                try {
+                    const text = await navigator.clipboard.readText();
+                    if (text) {
+                        input.value = text.trim();
+
+                        // Pulse the input to show it happened
+                        input.classList.remove('animate-paste');
+                        void input.offsetWidth; // Trigger reflow
+                        input.classList.add('animate-paste');
+
+                        showToast('success', 'Pasted from clipboard!');
+                        input.focus();
+                    }
+                } catch (err) {
+                    console.error('Clipboard paste failed:', err);
+                }
+            };
+
+            // Manual paste via icon
+            btn.addEventListener('click', performPaste);
+
+            // Auto-paste via clicking empty input
+            input.addEventListener('click', () => {
+                if (input.value === '') {
+                    // Trigger visual "tap" feedback on the button
+                    btn.classList.add('icon-btn-active');
+                    setTimeout(() => btn.classList.remove('icon-btn-active'), 150);
+                    performPaste();
+                }
+            });
+        };
+
+        setupPasteButton('pasteBinBtn', 'binNumber');
+        setupPasteButton('pasteCutBtn', 'cutNumber');
 
         document.getElementById('add_bin_button').addEventListener('click', addBin);
         document.getElementById('binNumber').addEventListener('keypress', e => e.key === 'Enter' && addBin());
