@@ -272,6 +272,26 @@
         .empty-state+p {
             color: var(--text-muted) !important;
         }
+
+        select.glass-input {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-position: right 1rem center;
+            background-repeat: no-repeat;
+            background-size: 1.2em;
+            padding-right: 3rem !important;
+            cursor: pointer;
+        }
+
+        .select-arrow {
+            position: absolute;
+            inset-inline-end: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: rgba(100, 116, 139, 0.9);
+        }
     </style>
 </head>
 
@@ -371,7 +391,7 @@
                                 Bin Number <span class="text-red-500">*</span>
                             </label>
                             <div class="relative">
-                                <input type="text" id="binNumber" maxlength="15" class="glass-input w-full pr-12"
+                                <input type="text" id="binNumber" class="glass-input w-full pr-12"
                                     placeholder="Enter BIN" />
                                 <button id="pasteBinBtn" type="button"
                                     class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl hover:bg-white/10 dark:hover:bg-white/20 transition-all opacity-40 hover:opacity-100 icon-btn-click"
@@ -385,19 +405,22 @@
                         </div>
                         <div class="relative group">
                             <label class="block font-semibold mb-2 text-sm uppercase tracking-wide">
-                                Cut Number
+                                Options
                             </label>
                             <div class="relative">
-                                <input type="text" id="cutNumber" maxlength="15" class="glass-input w-full pr-12"
-                                    placeholder="Optional" />
-                                <button id="pasteCutBtn" type="button"
-                                    class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl hover:bg-white/10 dark:hover:bg-white/20 transition-all opacity-40 hover:opacity-100 icon-btn-click"
-                                    title="Paste from clipboard">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <select id="options"
+                                    class="glass-input w-full pr-12 pl-4 py-4 appearance-none border border-slate-200 dark:border-slate-700 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-150 rounded-xl bg-white/90 dark:bg-slate-800/40 dark:text-white">
+                                    <option value="bin" class="text-gray-900 dark:text-slate-200">BIN</option>
+                                    <option value="cbin" class="text-gray-900 dark:text-slate-200">CBIN</option>
+                                    <option value="number" class="text-gray-900 dark:text-slate-200">NUMBER</option>
+                                    <option value="text" class="text-gray-900 dark:text-slate-200">TEXT</option>
+                                </select>
+                                <span class="select-arrow">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                            d="M19 9l-7 7-7-7" />
                                     </svg>
-                                </button>
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -526,8 +549,7 @@
             document.getElementById('totalCodes').textContent = qrCodes.length;
             if (qrCodes.length > 0) {
                 const lastCode = qrCodes[qrCodes.length - 1];
-                const displayLabel = lastCode.cut ? `${lastCode.bin} / ${lastCode.cut}` : lastCode.bin;
-                document.getElementById('lastAdded').textContent = displayLabel;
+                document.getElementById('lastAdded').textContent = lastCode.label;
             } else {
                 document.getElementById('lastAdded').textContent = 'None';
             }
@@ -535,43 +557,75 @@
 
         function addBin() {
             const binInput = document.getElementById('binNumber');
-            const cutInput = document.getElementById('cutNumber');
+            const optionInput = document.getElementById('options');
 
-            const rawBin = binInput.value.trim();
-            const rawCut = cutInput.value.trim();
+            const rawValue = binInput.value.trim();
+            const option = optionInput.value;
 
-            // Extract numbers for internal processing only
-            let binNum = rawBin.replace(/\D/g, '');
-            let cutNum = rawCut;
-
-            if (!binNum) {
-                showToast('error', 'Bin Number is required!');
+            if (!rawValue) {
+                showToast('error', 'Value is required!');
                 binInput.focus();
                 return;
             }
 
-            const formattedBin = 'BIN' + binNum;
-            const formattedCut = cutNum ? 'Cut ' + cutNum : '';
-            const qrCodeData = formattedBin.replace('BIN-', 'BIN');
+            let formattedValue;
+            let qrCodeData;
 
-            // Duplicate Check
-            const isDuplicate = qrCodes.some(code => code.data === qrCodeData && code.cut === formattedCut);
+            switch (option) {
+                case 'bin': {
+                    const digits = rawValue.replace(/\D/g, '');
+                    if (!digits) {
+                        showToast('error', 'BIN must contain numbers.');
+                        binInput.focus();
+                        return;
+                    }
+                    formattedValue = `BIN${digits}`;
+                    qrCodeData = formattedValue;
+                    break;
+                }
+                case 'cbin': {
+                    const digits = rawValue.replace(/\D/g, '');
+                    if (!digits) {
+                        showToast('error', 'CBIN must contain numbers.');
+                        binInput.focus();
+                        return;
+                    }
+                    formattedValue = `CBIN${digits}`;
+                    qrCodeData = formattedValue;
+                    break;
+                }
+                case 'number': {
+                    const digits = rawValue.replace(/\D/g, '');
+                    if (!digits) {
+                        showToast('error', 'Number must contain only digits.');
+                        binInput.focus();
+                        return;
+                    }
+                    formattedValue = digits;
+                    qrCodeData = digits;
+                    break;
+                }
+                case 'text':
+                default:
+                    formattedValue = rawValue;
+                    qrCodeData = rawValue;
+            }
+
+            const isDuplicate = qrCodes.some(code => code.data === qrCodeData);
             if (isDuplicate) {
-                showToast('error', `Barcode ${formattedBin} ${formattedCut} is already in the queue!`);
+                showToast('error', `${formattedValue} is already in the queue!`);
                 binInput.focus();
                 return;
             }
 
-            const newCode = { bin: formattedBin, cut: formattedCut, data: qrCodeData };
+            const newCode = { type: option, label: formattedValue, data: qrCodeData };
             qrCodes.push(newCode);
 
-            showToast('success', `${newCode.bin}${newCode.cut ? ' / ' + newCode.cut : ''} added successfully!`);
+            showToast('success', `${formattedValue} added successfully!`);
             renderQRCodes();
             updateStats();
 
-            // Clear inputs only on success
             binInput.value = '';
-            cutInput.value = '';
             binInput.focus();
         }
 
@@ -595,14 +649,20 @@
             }
 
             qrCodes.forEach((item, index) => {
-                const displayLabel = item.cut ? `${item.bin} / ${item.cut}` : item.bin;
+                const displayLabel = item.label;
                 const card = document.createElement('div');
                 card.className = 'glass-card card-enter rounded-2xl p-6 flex flex-col items-center';
                 card.style.animationDelay = `${index * 0.05}s`;
 
+                let titleText = displayLabel;
+                if (item.type === 'bin') titleText = `BIN - ${displayLabel}`;
+                else if (item.type === 'cbin') titleText = `CBIN - ${displayLabel}`;
+                else if (item.type === 'number') titleText = `NUMBER - ${displayLabel}`;
+                else if (item.type === 'text') titleText = `TEXT - ${displayLabel}`;
+
                 const label = document.createElement('p');
                 label.className = 'text-lg font-bold mb-3 text-center break-words';
-                label.textContent = `BIN - ${displayLabel}`;
+                label.textContent = titleText;
 
                 const qrContainer = document.createElement('div');
                 qrContainer.className = 'w-32 h-32 qr-container-style rounded-sm flex items-center justify-center mb-4 border border-gray-200';
@@ -640,11 +700,15 @@
             let printHTML = `<html><head><title>QR Code Print</title><style>*{margin:0;padding:0;}body{font-family:Arial,sans-serif;}.qr-item{display:inline-block;width:200px;height:140px;border:2px solid #000;background:#fff;padding:6px 8px;margin:8px;text-align:center;page-break-inside:avoid;vertical-align:top;}.bin-label{font-size:13px;margin-bottom:6px;font-weight:600;}.qr-item img{width:100px;height:100px;margin:0 auto;display:block;}</style></head><body>`;
 
             qrCodes.forEach((item, index) => {
-                const displayLabel = item.cut ? `${item.bin} / ${item.cut}` : item.bin;
+                const labelText = item.type === 'bin' ? `BIN - ${item.label}`
+                    : item.type === 'cbin' ? `CBIN - ${item.label}`
+                        : item.type === 'number' ? `Number - ${item.label}`
+                            : `Text - ${item.label}`;
+
                 const canvas = document.querySelector(`#qrList #qr-${index} canvas`);
                 if (canvas) {
                     const imgData = canvas.toDataURL('image/png');
-                    printHTML += `<div class="qr-item"><p class="bin-label">BIN - ${displayLabel}</p><img src="${imgData}" alt="${item.data}"></div>`;
+                    printHTML += `<div class="qr-item"><p class="bin-label">${labelText}</p><img src="${imgData}" alt="${item.data}"></div>`;
                 }
             });
 
@@ -717,11 +781,9 @@
         };
 
         setupPasteButton('pasteBinBtn', 'binNumber');
-        setupPasteButton('pasteCutBtn', 'cutNumber');
 
         document.getElementById('add_bin_button').addEventListener('click', addBin);
         document.getElementById('binNumber').addEventListener('keypress', e => e.key === 'Enter' && addBin());
-        document.getElementById('cutNumber').addEventListener('keypress', e => e.key === 'Enter' && addBin());
         document.getElementById('printBtn').addEventListener('click', printAll);
         document.getElementById('clearBtn').addEventListener('click', clearAll);
 
