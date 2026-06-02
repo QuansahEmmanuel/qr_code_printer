@@ -318,9 +318,50 @@
 </head>
 
 <body class="min-h-screen gradient-bg transition-colors duration-300">
+
+
+    <!-- ...................................................................................... -->
+
+    <!-- Notification -->
+
+    <div id="updateBanner"
+        class="w-full bg-indigo-600/90 dark:bg-purple-600/90 text-white backdrop-blur-md px-4 py-3.5 shadow-lg flex items-center justify-between transition-all duration-300">
+        <div class="flex items-start md:items-center gap-3 mx-auto max-w-4xl text-left md:text-center">
+            <span class="flex h-2 w-2 mt-1.5 md:mt-0 relative shrink-0">
+                <span
+                    class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+
+            <div class="flex flex-col md:flex-row md:items-center md:gap-2">
+                <p class="text-sm font-bold tracking-wide">
+                    System Update Stack Active:
+                </p>
+                <p class="text-sm font-medium tracking-wide text-indigo-100/90 dark:text-purple-100/90 leading-relaxed">
+                    Please check your input data configuration and select an option before adding items to the queue.
+                </p>
+            </div>
+        </div>
+
+        <button onclick="document.getElementById('updateBanner').remove()"
+            class="text-white/70 hover:text-white p-1.5 rounded-xl hover:bg-white/10 dark:hover:bg-white/5 transition-all duration-150 shrink-0 self-start md:self-auto"
+            title="Dismiss Notification">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- End Of Notification -->
+
+    <!-- ...................................................................................... -->
+
+
     <div id="toastContainer"
         class="fixed top-8 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-3 items-center pointer-events-none">
     </div>
+
+
     <div class="container mx-auto px-4 pt-8">
         <div class="text-center mb-8">
             <div class="flex items-center justify-center gap-4">
@@ -351,7 +392,7 @@
             <div class="stat-card rounded-2xl p-6 shadow-xl transition-colors">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm opacity-80 uppercase tracking-wide">Total Codes</p>
+                        <p class="text-sm opacity-80 uppercase tracking-wide">Total Data</p>
                         <p id="totalCodes" class="text-4xl font-bold mt-1">0</p>
                     </div>
                     <div class="bg-slate-200 dark:bg-white/20 rounded-full p-4 transition-colors">
@@ -410,11 +451,11 @@
                     <div class="grid md:grid-cols-2 gap-5">
                         <div class="relative group">
                             <label class="block font-semibold mb-2 text-sm uppercase tracking-wide">
-                                Bin Number <span class="text-red-500">*</span>
+                                Enter Data <span class="text-red-500">*</span>
                             </label>
                             <div class="relative">
                                 <input type="text" id="binNumber" class="glass-input w-full pr-12"
-                                    placeholder="Enter BIN" />
+                                    placeholder=" eg. 12345 / Hello" />
                                 <button id="pasteBinBtn" type="button"
                                     class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl hover:bg-white/10 dark:hover:bg-white/20 transition-all opacity-40 hover:opacity-100 icon-btn-click"
                                     title="Paste from clipboard">
