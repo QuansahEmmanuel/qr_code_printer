@@ -272,15 +272,28 @@
             color: var(--text-muted) !important;
         }
 
+
+
+
         select.glass-input {
             appearance: none;
             -webkit-appearance: none;
             -moz-appearance: none;
-            background-position: right 1rem center;
-            background-repeat: no-repeat;
-            background-size: 1.2em;
-            padding-right: 3rem !important;
-            cursor: pointer;
+            background: var(--input-bg) !important;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid var(--input-border) !important;
+            color: var(--input-text) !important;
+            border-radius: 16px !important;
+            padding: 14px 20px !important;
+            font-size: 1rem !important;
+            transition: all 0.3s ease;
+        }
+
+        select.glass-input:focus {
+            border-color: rgba(168, 85, 247, 0.5) !important;
+            box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2) !important;
+            outline: none;
         }
 
         .select-arrow {
@@ -417,12 +430,19 @@
                                 Options
                             </label>
                             <div class="relative">
-                                <select id="options"
-                                    class="glass-input w-full pr-12 pl-4 py-4 appearance-none border border-slate-200 dark:border-slate-700 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-150 rounded-xl bg-white/90 dark:bg-slate-800/40 dark:text-white">
-                                    <option value="bin" class="text-gray-900 dark:text-slate-200">BIN</option>
-                                    <option value="cbin" class="text-gray-900 dark:text-slate-200">CBIN</option>
-                                    <option value="number" class="text-gray-900 dark:text-slate-200">NUMBER</option>
-                                    <option value="text" class="text-gray-900 dark:text-slate-200">TEXT</option>
+                                <select id="options" class="glass-input w-full pr-12">
+                                    <option value="bin"
+                                        class="bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-200">BIN
+                                    </option>
+                                    <option value="cbin"
+                                        class="bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-200">CBIN
+                                    </option>
+                                    <option value="number"
+                                        class="bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-200">NUMBER
+                                    </option>
+                                    <option value="text"
+                                        class="bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-200">TEXT
+                                    </option>
                                 </select>
                                 <span class="select-arrow">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
