@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QR Code Printer</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        /* Animations */
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulsePaste {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes toastEnter {
+            from {
+                transform: translateY(-20px) scale(0.9);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes toastExit {
+            from {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateY(-20px) scale(0.9);
+                opacity: 0;
+            }
+        }
+
+        .toast-item {
+            animation: toastEnter 0.3s cubic-bezier(0.2, 0, 0.2, 1) forwards;
+            background: var(--toast-bg);
+            color: var(--toast-text);
+            border: 1px solid var(--glass-border);
+        }
+
+        .toast-exit {
+            animation: toastExit 0.3s cubic-bezier(0.2, 0, 0.2, 1) forwards;
+        }
+
+        .animate-paste {
+            animation: pulsePaste 0.3s ease-out;
+        }
+
+        .icon-btn-click:active,
+        .icon-btn-active {
+            transform: translateY(-50%) scale(0.75) !important;
+            background: rgba(168, 85, 247, 0.25) !important;
+            opacity: 1 !important;
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+        }
+
+        .card-enter {
+            animation: slideInUp 0.4s ease-out forwards;
+        }
+
+        /* Theme Variables */
+        :root {
+            --bg-start: #f8fafc;
+            --bg-end: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --glass-shadow: rgba(0, 0, 0, 0.1);
+            --input-bg: rgba(255, 255, 255, 0.8);
+            --input-border: rgba(203, 213, 225, 0.8);
+            --input-text: #0f172a;
+            --input-placeholder: #94a3b8;
+            --stat-bg: rgba(255, 255, 255, 0.6);
+            --modal-bg: rgba(255, 255, 255, 0.95);
+            --modal-text-primary: #0f172a;
+            --toast-bg: #ffffff;
+            --toast-text: #334155;
+        }
+
+        .dark {
+            --bg-start: #0f172a;
+            --bg-end: #1e293b;
+            --text-main: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.9);
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --glass-shadow: rgba(0, 0, 0, 0.3);
+            --input-bg: rgba(255, 255, 255, 0.12);
+            --input-border: rgba(255, 255, 255, 0.15);
+            --input-text: #f1f5f9;
+            --input-placeholder: rgba(241, 245, 249, 0.6);
+            --stat-bg: rgba(255, 255, 255, 0.07);
+            --modal-bg: rgba(30, 41, 59, 0.9);
+            --modal-text-primary: #f1f5f9;
+            --toast-bg: #1e293b;
+            --toast-text: #f1f5f9;
+        }
+
+        /* Background */
+        .gradient-bg {
+            background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+            color: var(--text-main);
+            transition: background 0.5s ease, color 0.5s ease;
+        }
+
+        /* Universal Glass Effect */
+        .glassmorphism {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px var(--glass-shadow);
+            transition: all 0.3s ease;
+        }
+
+        /* Glass Input */
+        input.glass-input {
+            background: var(--input-bg) !important;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid var(--input-border) !important;
+            color: var(--input-text) !important;
+            border-radius: 16px !important;
+            padding: 14px 20px !important;
+            font-size: 1rem !important;
+            transition: all 0.3s ease;
+        }
+
+        input.glass-input::placeholder {
+            color: var(--input-placeholder) !important;
+        }
+
+        input.glass-input:focus {
+            border-color: rgba(168, 85, 247, 0.5) !important;
+            box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2) !important;
+            outline: none;
+        }
+
+        /* Glass Button */
+        .btn-glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid var(--glass-border);
+            color: white;
+            font-weight: 600;
+            border-radius: 16px;
+            padding: 12px 24px;
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-glass:hover {
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+        }
+
+        .btn-glass:active {
+            transform: translateY(4px) scale(0.98) !important;
+        }
+
+        /* QR Card */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 6px 20px var(--glass-shadow);
+            color: var(--text-main);
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-6px) rotateX(1deg);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Stat Cards */
+        .stat-card {
+            background: var(--stat-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 6px 16px var(--glass-shadow);
+            animation: fadeIn 0.5s ease-out;
+            color: var(--text-main);
+        }
+
+        /* Modal Glass */
+        #clearModal .modal-glass {
+            background: var(--modal-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            color: var(--modal-text-primary);
+            border-radius: 24px;
+        }
+
+        #clearModal .modal-glass h3,
+        #clearModal .modal-glass p,
+        #clearModal .modal-glass strong {
+            color: var(--modal-text-primary) !important;
+        }
+
+        /* QR Container (keep white for scanning) */
+        .qr-container-style {
+            background: white !important;
+            border-radius: 12px;
+            padding: 4px;
+        }
+
+        /* Empty state text */
+        .empty-state+h3,
+        .empty-state+p {
+            color: var(--text-muted) !important;
+        }
+
+
+
+
+        select.glass-input {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background: var(--input-bg) !important;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid var(--input-border) !important;
+            color: var(--input-text) !important;
+            border-radius: 16px !important;
+            padding: 14px 20px !important;
+            font-size: 1rem !important;
+            transition: all 0.3s ease;
+        }
+
+        select.glass-input:focus {
+            border-color: rgba(168, 85, 247, 0.5) !important;
+            box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2) !important;
+            outline: none;
+        }
+
+        .select-arrow {
+            position: absolute;
+            inset-inline-end: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: rgba(100, 116, 139, 0.9);
+        }
+
+        @media (max-width: 640px) {
+            .glassmorphism {
+                padding: 1.5rem;
+            }
+
+            .btn-glass {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen gradient-bg transition-colors duration-300">
+
+
+    <!-- ...................................................................................... -->
+
+    <!-- Notification -->
+
+    <div id="updateBanner"
+        class="w-full bg-indigo-600/90 dark:bg-purple-600/90 text-white backdrop-blur-md px-4 py-3.5 shadow-lg flex items-center justify-between transition-all duration-300">
+        <div class="flex items-start md:items-center gap-3 mx-auto max-w-4xl text-left md:text-center">
+            <span class="flex h-2 w-2 mt-1.5 md:mt-0 relative shrink-0">
+                <span
+                    class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+
+            <div class="flex flex-col md:flex-row md:items-center md:gap-2">
+                <p class="text-sm font-bold tracking-wide">
+                    System Update Stack Active:
+                </p>
+                <p class="text-sm font-medium tracking-wide text-indigo-100/90 dark:text-purple-100/90 leading-relaxed">
+                    Please check your input data configuration and select an option before adding items to the queue.
+                </p>
+            </div>
+        </div>
+
+        <button onclick="document.getElementById('updateBanner').remove()"
+            class="text-white/70 hover:text-white p-1.5 rounded-xl hover:bg-white/10 dark:hover:bg-white/5 transition-all duration-150 shrink-0 self-start md:self-auto"
+            title="Dismiss Notification">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- End Of Notification -->
+
+    <!-- ...................................................................................... -->
+
+
+    <div id="toastContainer"
+        class="fixed top-8 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-3 items-center pointer-events-none">
+    </div>
+
+
+    <div class="container mx-auto px-4 pt-8">
+        <div class="text-center mb-8">
+            <div class="flex items-center justify-center gap-4">
+                <a href="index.html">
+                    <img src="./logo.png" alt="Logo" class="w-14 h-14 rounded-full">
+                </a>
+                <h1 class="text-5xl font-bold mb-3 tracking-tight">QR Code Printer</h1>
+                <button id="themeToggle"
+                    class="p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-all duration-150 active:scale-75 active:rotate-12"
+                    aria-label="Toggle Dark Mode">
+                    <svg class="w-8 h-8 hidden dark:block text-yellow-300" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <svg class="w-8 h-8 block dark:hidden text-slate-700" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                </button>
+            </div>
+            <p class="text-xl opacity-90">Enterprise-Grade Barcode Printing Solution</p>
+        </div>
+
+        <!-- Stats -->
+        <div id="statsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 max-w-5xl mx-auto">
+            <div class="stat-card rounded-2xl p-6 shadow-xl transition-colors">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-80 uppercase tracking-wide">Total Data</p>
+                        <p id="totalCodes" class="text-4xl font-bold mt-1">0</p>
+                    </div>
+                    <div class="bg-slate-200 dark:bg-white/20 rounded-full p-4 transition-colors">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card rounded-2xl p-6 shadow-xl transition-colors">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-80 uppercase tracking-wide">Last Added</p>
+                        <p id="lastAdded" class="text-2xl font-bold mt-1">None</p>
+                    </div>
+                    <div class="bg-slate-200 dark:bg-white/20 rounded-full p-4 transition-colors">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card rounded-2xl p-6 shadow-xl transition-colors">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-80 uppercase tracking-wide">Status</p>
+                        <p class="text-2xl font-bold mt-1">Ready</p>
+                    </div>
+                    <div class="bg-slate-200 dark:bg-white/20 rounded-full p-4 transition-colors">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bundle Chart Lookup Form -->
+        <div class="flex justify-center mb-8">
+            <div class="glassmorphism rounded-3xl shadow-2xl p-8 w-full max-w-2xl">
+                <div class="flex items-center justify-center mb-6">
+                    <div class="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-full p-3 mr-4">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
+                        </svg>
+                    </div>
+                    <h2 class="text-3xl font-bold">Look Up Bundle Chart</h2>
+                </div>
+
+                <div class="space-y-5">
+                    <div class="grid md:grid-cols-2 gap-5">
+                        <div class="relative group">
+                            <label class="block font-semibold mb-2 text-sm uppercase tracking-wide">
+                                Laysheet No <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="laysheetNo" class="glass-input w-full"
+                                placeholder="e.g. 66882" inputmode="numeric" />
+                        </div>
+                        <div class="relative group">
+                            <label class="block font-semibold mb-2 text-sm uppercase tracking-wide">
+                                Bundle No <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="bundleNo" class="glass-input w-full"
+                                placeholder="e.g. 1070" inputmode="numeric" />
+                        </div>
+                    </div>
+
+                    <button id="lookupBtn"
+                        class="btn-glass w-full bg-gradient-to-r from-emerald-600/90 to-teal-600/90 hover:from-emerald-700 hover:to-teal-700 text-white text-lg font-bold py-4 rounded-xl active:translate-y-[4px] active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-3">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
+                        </svg>
+                        <span>Look Up</span>
+                    </button>
+
+                    <div id="lookupResult" class="hidden mt-2 p-5 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/40 dark:bg-white/5"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- QR List -->
+        <div class="glassmorphism rounded-3xl shadow-2xl p-8 mb-8 max-w-7xl mx-auto">
+            <div
+                class="flex flex-wrap items-center justify-between mb-8 pb-6 border-b border-slate-200 dark:border-gray-700 transition-colors">
+                <div class="flex items-center gap-3 mb-4 md:mb-0">
+                    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full p-2">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold">Generated Codes</h3>
+                </div>
+                <div class="flex justify-between gap-3 w-full md:w-auto">
+                    <button id="printBtn" disabled
+                        class="btn-glass flex items-center justify-center gap-2 bg-emerald-500/90 hover:bg-emerald-600 text-white font-semibold text-xs md:text-lg px-6 py-3 rounded-xl shadow-lg w-full sm:w-auto disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none disabled:transform-none disabled:shadow-none">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                        </svg>
+                        Print All
+                    </button>
+                    <button id="clearBtn" disabled
+                        class="btn-glass flex items-center justify-center gap-2 bg-red-500/90 hover:bg-red-600 text-white font-semibold text-xs md:text-lg px-6 py-3 rounded-xl shadow-lg w-full sm:w-auto disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none disabled:transform-none disabled:shadow-none">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Clear All
+                    </button>
+                </div>
+            </div>
+
+            <div id="qrList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+        </div>
+    </div>
+
+    <!-- Clear Confirmation Modal -->
+    <div id="clearModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="modal-glass max-w-md w-full p-8">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="bg-red-100 rounded-full p-3">
+                    <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold">Confirm Clear</h3>
+            </div>
+            <p class="mb-8 text-lg">
+                This action will permanently remove <strong>all generated codes</strong>. This cannot be undone.
+            </p>
+            <div class="flex gap-4">
+                <button id="confirmClearBtn"
+                    class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-xl transition-all duration-150 active:translate-y-[4px] active:scale-[0.98]">
+                    Yes, Clear All
+                </button>
+                <button id="cancelClearBtn"
+                    class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-xl transition-all duration-150 active:translate-y-[4px] active:scale-[0.98]">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer
+        class="mt-12 py-8 border-t border-slate-200 dark:border-white/10 bg-slate-100/50 dark:bg-slate-900/50 backdrop-blur-sm transition-colors">
+        <div class="container mx-auto text-center">
+            <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">
+                © <span id="currentYear"></span> <span
+                    class="font-bold text-purple-600 dark:text-purple-400">Middle_Code Technologies</span>
+                — Enterprise Solutions
+            </p>
+            <p class="text-xs text-slate-500 dark:text-slate-500">
+                Professional QR Printing Solution v2.0
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Hot-Toast style helper
+        const showToast = (type, message) => {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast-item pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-full shadow-2xl min-w-[300px] max-w-md';
+
+            const icon = type === 'success'
+                ? `<div class="bg-emerald-500 rounded-full p-1 text-white"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div>`
+                : `<div class="bg-red-500 rounded-full p-1 text-white"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg></div>`;
+
+            toast.innerHTML = `
+                ${icon}
+                <span class="text-sm font-semibold cursor-pointer">${message}</span>
+            `;
+
+            container.appendChild(toast);
+
+            // Auto-remove
+            setTimeout(() => {
+                toast.classList.add('toast-exit');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        };
+
+        let qrCodes = [];
+
+        function updateStats() {
+            const hasData = qrCodes.length > 0;
+
+            // Dynamically toggle the button disabled properties
+            document.getElementById('printBtn').disabled = !hasData;
+            document.getElementById('clearBtn').disabled = !hasData;
+
+            document.getElementById('totalCodes').textContent = qrCodes.length;
+            if (hasData) {
+                const lastCode = qrCodes[qrCodes.length - 1];
+                document.getElementById('lastAdded').textContent = lastCode.label;
+            } else {
+                document.getElementById('lastAdded').textContent = 'None';
+            }
+        }
+
+        // Shared queueing logic used by both the manual form and the Bundle Chart lookup
+        function queueCode(option, rawValue, { silent = false } = {}) {
+            rawValue = (rawValue || '').trim();
+
+            if (!rawValue) {
+                if (!silent) showToast('error', 'Value is required!');
+                return false;
+            }
+
+            let formattedValue;
+            let qrCodeData;
+
+            switch (option) {
+                case 'bin': {
+                    const digits = rawValue.replace(/\D/g, '');
+                    if (!digits) {
+                        if (!silent) showToast('error', 'BIN must contain numbers.');
+                        return false;
+                    }
+                    formattedValue = `BIN${digits}`;
+                    qrCodeData = formattedValue;
+                    break;
+                }
+                case 'cbin': {
+                    const digits = rawValue.replace(/\D/g, '');
+                    if (!digits) {
+                        if (!silent) showToast('error', 'CBIN must contain numbers.');
+                        return false;
+                    }
+                    formattedValue = `CBIN${digits}`;
+                    qrCodeData = formattedValue;
+                    break;
+                }
+                case 'number': {
+                    const digits = rawValue.replace(/\D/g, '');
+                    if (!digits) {
+                        if (!silent) showToast('error', 'Number must contain only digits.');
+                        return false;
+                    }
+                    formattedValue = digits;
+                    qrCodeData = digits;
+                    break;
+                }
+                case 'text':
+                default:
+                    formattedValue = rawValue;
+                    qrCodeData = rawValue;
+            }
+
+            const isDuplicate = qrCodes.some(code => code.data === qrCodeData);
+            if (isDuplicate) {
+                showToast('error', `${formattedValue} is already in the queue!`);
+                return false;
+            }
+
+            qrCodes.push({ type: option, label: formattedValue, data: qrCodeData });
+
+            showToast('success', `${formattedValue} added successfully!`);
+            renderQRCodes();
+            updateStats();
+            return true;
+        }
+
+        // ---- Bundle Chart Lookup ----
+        // Goes through our own serverless API route (/api/bundlechart) instead of the
+        // ddns server directly. The API route fetches the report server-side (server-to-server
+        // requests aren't subject to browser CORS rules) and hands the HTML back to this page.
+        const BUNDLE_CHART_API_URL = '/api/bundlechart?laysheet=';
+        let lastLookupResult = null;
+
+        function findBundleRow(html, bundleNo) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const tables = Array.from(doc.querySelectorAll('table'));
+
+            for (const table of tables) {
+                const rows = Array.from(table.querySelectorAll('tr'));
+                if (rows.length < 2) continue;
+
+                // The size-group label (e.g. "M(A )") sits in its own row above the real
+                // header row, so scan for the row that actually contains "Bundle No" rather
+                // than assuming the header is row 0.
+                let headerRowIdx = -1;
+                let headerCells = null;
+                for (let r = 0; r < rows.length; r++) {
+                    const cells = Array.from(rows[r].querySelectorAll('th,td')).map(c => c.textContent.trim());
+                    if (cells.some(c => /^bundle no/i.test(c))) {
+                        headerRowIdx = r;
+                        headerCells = cells;
+                        break;
+                    }
+                }
+                if (headerRowIdx === -1) continue; // not a bundle table, skip
+
+                const bundleIdx = headerCells.findIndex(h => /^bundle no/i.test(h));
+                const barcodeIdx = headerCells.findIndex(h => /^barcode/i.test(h));
+                const binIdx = headerCells.findIndex(h => /^bin$/i.test(h));
+                const qtyIdx = headerCells.findIndex(h => /^qty$/i.test(h));
+                const cutNoIdx = headerCells.findIndex(h => /^cut no/i.test(h));
+                const rangeIdx = headerCells.findIndex(h => /^range/i.test(h));
+
+                for (let i = headerRowIdx + 1; i < rows.length; i++) {
+                    const cells = Array.from(rows[i].querySelectorAll('td,th')).map(c => c.textContent.trim());
+                    if (!cells[bundleIdx]) continue;
+                    if (cells[bundleIdx] === String(bundleNo).trim()) {
+                        return {
+                            bundleNo: cells[bundleIdx],
+                            barcode: barcodeIdx > -1 ? cells[barcodeIdx] : '',
+                            bin: binIdx > -1 ? cells[binIdx] : '',
+                            qty: qtyIdx > -1 ? cells[qtyIdx] : '',
+                            cutNo: cutNoIdx > -1 ? cells[cutNoIdx] : '',
+                            range: rangeIdx > -1 ? cells[rangeIdx] : ''
+                        };
+                    }
+                }
+            }
+            return null;
+        }
+
+        function renderLookupResult(match, laysheetNo) {
+            const box = document.getElementById('lookupResult');
+            box.classList.remove('hidden');
+
+            if (!match) {
+                box.innerHTML = `
+                    <div class="text-center text-red-500 dark:text-red-400 font-semibold py-2">
+                        No bundle matching that Bundle No was found in Laysheet ${laysheetNo}.
+                        Double check both numbers and try again.
+                    </div>`;
+                return;
+            }
+
+            lastLookupResult = match;
+
+            box.innerHTML = `
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <p class="text-xs uppercase tracking-wide opacity-70">Bundle No</p>
+                        <p class="text-lg font-bold">${match.bundleNo}${match.range ? ` <span class="text-sm font-normal opacity-70">(${match.range})</span>` : ''}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-wide opacity-70">Barcode</p>
+                        <p class="text-lg font-bold">${match.barcode || '—'}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-wide opacity-70">Bin</p>
+                        <p class="text-lg font-bold">${match.bin || '—'}</p>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-3 mt-5">
+                    <button id="addBinFromLookup" class="btn-glass flex-1 min-w-[160px] bg-gradient-to-r from-emerald-600/90 to-teal-600/90 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold py-3 rounded-xl active:translate-y-[3px] active:scale-[0.98] transition-all duration-150" ${match.bin ? '' : 'disabled'}>
+                        Add Bin to Queue
+                    </button>
+                    <button id="addBarcodeFromLookup" class="btn-glass flex-1 min-w-[160px] bg-gradient-to-r from-purple-600/90 to-indigo-600/90 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold py-3 rounded-xl active:translate-y-[3px] active:scale-[0.98] transition-all duration-150" ${match.barcode ? '' : 'disabled'}>
+                        Add Barcode to Queue
+                    </button>
+                </div>
+            `;
+
+            const addBinBtn = document.getElementById('addBinFromLookup');
+            if (addBinBtn) {
+                addBinBtn.addEventListener('click', () => {
+                    // match.bin already looks like "BIN1870673" — queueCode('bin', ...) strips
+                    // non-digits and re-prefixes "BIN", so passing it straight through is safe.
+                    queueCode('bin', match.bin);
+                });
+            }
+
+            const addBarcodeBtn = document.getElementById('addBarcodeFromLookup');
+            if (addBarcodeBtn) {
+                addBarcodeBtn.addEventListener('click', () => {
+                    queueCode('text', match.barcode);
+                });
+            }
+        }
+
+        async function lookupBundle() {
+            const laysheetInput = document.getElementById('laysheetNo');
+            const bundleInput = document.getElementById('bundleNo');
+            const lookupBtn = document.getElementById('lookupBtn');
+            const box = document.getElementById('lookupResult');
+
+            const laysheetNo = laysheetInput.value.trim();
+            const bundleNo = bundleInput.value.trim();
+
+            if (!laysheetNo || !bundleNo) {
+                showToast('error', 'Enter both Laysheet No and Bundle No');
+                return;
+            }
+
+            const originalLabel = lookupBtn.innerHTML;
+            lookupBtn.disabled = true;
+            lookupBtn.innerHTML = '<span>Looking up...</span>';
+            box.classList.remove('hidden');
+            box.innerHTML = `<div class="text-center py-2 opacity-70">Fetching Laysheet ${laysheetNo}...</div>`;
+
+            try {
+                const url = BUNDLE_CHART_API_URL + encodeURIComponent(laysheetNo);
+                const res = await fetch(url);
+                const contentType = res.headers.get('content-type') || '';
+
+                if (!res.ok) {
+                    let message = `Server responded with status ${res.status}`;
+                    if (contentType.includes('application/json')) {
+                        const errBody = await res.json().catch(() => null);
+                        if (errBody && errBody.error) message = errBody.error;
+                    }
+                    throw new Error(message);
+                }
+
+                const html = await res.text();
+                const match = findBundleRow(html, bundleNo);
+                renderLookupResult(match, laysheetNo);
+                if (match) {
+                    showToast('success', `Found Bundle ${match.bundleNo}`);
+                }
+            } catch (err) {
+                console.error('Bundle lookup failed:', err);
+                box.innerHTML = `
+                    <div class="text-center text-red-500 dark:text-red-400 py-2">
+                        <p class="font-semibold mb-1">Could not fetch the report.</p>
+                        <p class="text-sm opacity-80">${(err && err.message) || 'Unknown error'}</p>
+                    </div>`;
+                showToast('error', 'Lookup failed — see details below the button');
+            } finally {
+                lookupBtn.disabled = false;
+                lookupBtn.innerHTML = originalLabel;
+            }
+        }
+
+        function renderQRCodes() {
+            const container = document.getElementById('qrList');
+            container.innerHTML = '';
+
+            if (qrCodes.length === 0) {
+                container.innerHTML = `
+          <div class="col-span-full text-center py-16 text-slate-600 dark:text-slate-200">
+            <div class="empty-state inline-block bg-slate-200 dark:bg-slate-800 rounded-full p-8 mb-4 transition-colors">
+              <svg class="w-16 h-16 text-slate-400 dark:text-slate-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+              </svg>
+            </div>
+            <h3 class="text-2xl font-bold mb-2">No Codes Generated</h3>
+            <p class="text-slate-500 dark:text-slate-400">Add a BIN number above to get started</p>
+          </div>
+        `;
+                return;
+            }
+
+            qrCodes.forEach((item, index) => {
+                const displayLabel = item.label;
+                const card = document.createElement('div');
+                // Added min-w-0 and w-full directly to the wrapper to prevent overflow out of the parent grid item
+                card.className = 'glass-card card-enter rounded-2xl p-6 flex flex-col items-center w-full min-w-0 overflow-hidden';
+                card.style.animationDelay = `${index * 0.05}s`;
+
+                let titleText = displayLabel;
+                if (item.type === 'bin') titleText = `BIN - ${displayLabel}`;
+                else if (item.type === 'cbin') titleText = `CBIN - ${displayLabel}`;
+                else if (item.type === 'number') titleText = `${displayLabel}`;
+                else if (item.type === 'text') titleText = `${displayLabel}`;
+
+                const label = document.createElement('p');
+                // Added w-full, break-words, and overflow-wrap classes to dynamic typography tags
+                label.className = 'text-lg font-bold mb-3 text-center w-full break-words whitespace-normal px-2';
+                label.textContent = titleText;
+
+                const qrContainer = document.createElement('div');
+                qrContainer.className = 'w-32 h-32 qr-container-style rounded-sm flex items-center justify-center mb-4 border border-gray-200 shrink-0';
+                qrContainer.id = `qr-${index}`;
+                new QRCode(qrContainer, { text: item.data, width: 120, height: 120 });
+
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'btn-glass w-full bg-red-500/90 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2 mt-auto active:translate-y-[4px] active:scale-[0.98] transition-all duration-150';
+                removeBtn.innerHTML = `
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                        Remove
+                                     `;
+                removeBtn.onclick = () => {
+                    qrCodes.splice(index, 1);
+                    renderQRCodes();
+                    updateStats();
+                    showToast('success', 'Code removed successfully!');
+                };
+
+                card.appendChild(label);
+                card.appendChild(qrContainer);
+                card.appendChild(removeBtn);
+                container.appendChild(card);
+            });
+        }
+
+        function printAll() {
+            if (qrCodes.length === 0) {
+                showToast('error', 'No codes to print!');
+                return;
+            }
+
+            let printHTML = `<html><head><title>QR Code Print</title><style>*{margin:0;padding:0;}body{font-family:Arial,sans-serif;}.qr-item{display:inline-block;width:200px;height:140px;border:2px solid #000;background:#fff;padding:6px 8px;margin:8px;text-align:center;page-break-inside:avoid;vertical-align:top;}.bin-label{font-size:13px;margin-bottom:6px;font-weight:600;}.qr-item img{width:100px;height:100px;margin:0 auto;display:block;}</style></head><body>`;
+
+            qrCodes.forEach((item, index) => {
+                const labelText = item.type === 'bin' ? `BIN - ${item.label}`
+                    : item.type === 'cbin' ? `CBIN - ${item.label}`
+                        : item.type === 'number' ? `${item.label}`
+                            : `${item.label}`;
+
+                const canvas = document.querySelector(`#qrList #qr-${index} canvas`);
+                if (canvas) {
+                    const imgData = canvas.toDataURL('image/png');
+                    printHTML += `<div class="qr-item"><p class="bin-label">${labelText}</p><img src="${imgData}" alt="${item.data}"></div>`;
+                }
+            });
+
+            printHTML += `</body></html>`;
+
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printHTML);
+            printWindow.document.close();
+            setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+            }, 250);
+        }
+
+        function clearAll() {
+            if (qrCodes.length === 0) {
+                showToast('error', 'No codes to clear!');
+                return;
+            }
+            const modal = document.getElementById('clearModal');
+            modal.classList.remove('hidden');
+            document.getElementById('confirmClearBtn').onclick = () => {
+                qrCodes = [];
+                renderQRCodes();
+                updateStats();
+                modal.classList.add('hidden');
+                showToast('success', 'All codes cleared!');
+            };
+            document.getElementById('cancelClearBtn').onclick = () => {
+                modal.classList.add('hidden');
+            };
+        }
+
+        document.getElementById('lookupBtn').addEventListener('click', lookupBundle);
+        document.getElementById('laysheetNo').addEventListener('keypress', e => e.key === 'Enter' && lookupBundle());
+        document.getElementById('bundleNo').addEventListener('keypress', e => e.key === 'Enter' && lookupBundle());
+        document.getElementById('printBtn').addEventListener('click', printAll);
+        document.getElementById('clearBtn').addEventListener('click', clearAll);
+
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+        renderQRCodes();
+        updateStats();
+
+        // Theme Toggle Logic
+        const themeToggleBtn = document.getElementById('themeToggle');
+        const html = document.documentElement;
+
+        // Check local storage or system preference
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.theme = 'light';
+            } else {
+                html.classList.add('dark');
+                localStorage.theme = 'dark';
+            }
+        });
+    </script>
+</body>
+
+</html>
