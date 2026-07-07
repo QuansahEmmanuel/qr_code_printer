@@ -982,7 +982,7 @@
             };
         }
 
-        document.getElementById('lookupBtn').addEventListener('click', lookupBundle);
+        document.getElementById('lookupBtn').addEventListener('click', () => lookupBundle());
         document.getElementById('laysheetNo').addEventListener('keypress', e => e.key === 'Enter' && lookupBundle());
         document.getElementById('bundleNo').addEventListener('keypress', e => e.key === 'Enter' && lookupBundle());
         document.getElementById('printBtn').addEventListener('click', printAll);
