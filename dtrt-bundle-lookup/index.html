@@ -675,6 +675,11 @@
         const BUNDLE_CHART_API_URL = '/api/bundlechart?laysheet=';
         let lastLookupResult = null;
 
+        // Caches the raw report HTML per Laysheet No so looking up a second Bundle No
+        // on the same laysheet skips the slow round trip to the ddns server. Bypassed via
+        // the "Refresh" link in the result box if the underlying report may have changed.
+        const laysheetCache = new Map();
+
         function findBundleRow(html, bundleNo) {
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
@@ -733,7 +738,13 @@
                     <div class="text-center text-red-500 dark:text-red-400 font-semibold py-2">
                         No bundle matching that Bundle No was found in Laysheet ${laysheetNo}.
                         Double check both numbers and try again.
+                    </div>
+                    <div class="text-center mt-2">
+                        <button id="refreshLookup" class="text-xs font-semibold underline opacity-70 hover:opacity-100">
+                            Refresh Laysheet ${laysheetNo} data
+                        </button>
                     </div>`;
+                document.getElementById('refreshLookup').addEventListener('click', () => lookupBundle(true));
                 return;
             }
 
@@ -762,7 +773,14 @@
                         Add Barcode to Queue
                     </button>
                 </div>
+                <div class="text-center mt-4">
+                    <button id="refreshLookup" class="text-xs font-semibold underline opacity-60 hover:opacity-100">
+                        Refresh Laysheet ${laysheetNo} data
+                    </button>
+                </div>
             `;
+
+            document.getElementById('refreshLookup').addEventListener('click', () => lookupBundle(true));
 
             const addBinBtn = document.getElementById('addBinFromLookup');
             if (addBinBtn) {
@@ -781,7 +799,7 @@
             }
         }
 
-        async function lookupBundle() {
+        async function lookupBundle(forceRefresh = false) {
             const laysheetInput = document.getElementById('laysheetNo');
             const bundleInput = document.getElementById('bundleNo');
             const lookupBtn = document.getElementById('lookupBtn');
@@ -805,29 +823,37 @@
                 <span>Looking up...</span>
             `;
             box.classList.remove('hidden');
-            box.innerHTML = `<div class="text-center py-2 opacity-70">Fetching Laysheet ${laysheetNo}...</div>`;
 
             try {
-                const url = BUNDLE_CHART_API_URL + encodeURIComponent(laysheetNo);
-                const res = await fetch(url);
-                const contentType = res.headers.get('content-type') || '';
+                let html = !forceRefresh ? laysheetCache.get(laysheetNo) : undefined;
 
-                if (!res.ok) {
-                    let message = `Server responded with status ${res.status}`;
-                    if (contentType.includes('application/json')) {
-                        const errBody = await res.json().catch(() => null);
-                        if (errBody && errBody.error) message = errBody.error;
+                if (!html) {
+                    box.innerHTML = `<div class="text-center py-2 opacity-70">Fetching Laysheet ${laysheetNo}...</div>`;
+
+                    const url = BUNDLE_CHART_API_URL + encodeURIComponent(laysheetNo);
+                    const res = await fetch(url);
+                    const contentType = res.headers.get('content-type') || '';
+
+                    if (!res.ok) {
+                        let message = `Server responded with status ${res.status}`;
+                        if (contentType.includes('application/json')) {
+                            const errBody = await res.json().catch(() => null);
+                            if (errBody && errBody.error) message = errBody.error;
+                        }
+                        throw new Error(message);
                     }
-                    throw new Error(message);
+
+                    html = await res.text();
+                    laysheetCache.set(laysheetNo, html);
                 }
 
-                const html = await res.text();
                 const match = findBundleRow(html, bundleNo);
                 renderLookupResult(match, laysheetNo);
                 if (match) {
                     showToast('success', `Found Bundle ${match.bundleNo}`);
                 }
             } catch (err) {
+                laysheetCache.delete(laysheetNo);
                 console.error('Bundle lookup failed:', err);
                 box.innerHTML = `
                     <div class="text-center text-red-500 dark:text-red-400 py-2">
