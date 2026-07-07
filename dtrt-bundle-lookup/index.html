@@ -324,7 +324,7 @@
 
     <!-- Notification -->
 
-    <div id="updateBanner"
+    <!-- <div id="updateBanner"
         class="w-full bg-indigo-600/90 dark:bg-purple-600/90 text-white backdrop-blur-md px-4 py-3.5 shadow-lg flex items-center justify-between transition-all duration-300">
         <div class="flex items-start md:items-center gap-3 mx-auto max-w-4xl text-left md:text-center">
             <span class="flex h-2 w-2 mt-1.5 md:mt-0 relative shrink-0">
@@ -350,7 +350,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
         </button>
-    </div>
+    </div> -->
 
     <!-- End Of Notification -->
 
@@ -454,15 +454,15 @@
                             <label class="block font-semibold mb-2 text-sm uppercase tracking-wide">
                                 Laysheet No <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" id="laysheetNo" class="glass-input w-full"
-                                placeholder="e.g. 66882" inputmode="numeric" />
+                            <input type="text" id="laysheetNo" class="glass-input w-full" placeholder="e.g. 66882"
+                                inputmode="numeric" />
                         </div>
                         <div class="relative group">
                             <label class="block font-semibold mb-2 text-sm uppercase tracking-wide">
                                 Bundle No <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" id="bundleNo" class="glass-input w-full"
-                                placeholder="e.g. 1070" inputmode="numeric" />
+                            <input type="text" id="bundleNo" class="glass-input w-full" placeholder="e.g. 1070"
+                                inputmode="numeric" />
                         </div>
                     </div>
 
@@ -475,7 +475,9 @@
                         <span>Look Up</span>
                     </button>
 
-                    <div id="lookupResult" class="hidden mt-2 p-5 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/40 dark:bg-white/5"></div>
+                    <div id="lookupResult"
+                        class="hidden mt-2 p-5 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/40 dark:bg-white/5">
+                    </div>
                 </div>
             </div>
         </div>
@@ -795,7 +797,13 @@
 
             const originalLabel = lookupBtn.innerHTML;
             lookupBtn.disabled = true;
-            lookupBtn.innerHTML = '<span>Looking up...</span>';
+            lookupBtn.innerHTML = `
+                <svg class="w-6 h-6 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                </svg>
+                <span>Looking up...</span>
+            `;
             box.classList.remove('hidden');
             box.innerHTML = `<div class="text-center py-2 opacity-70">Fetching Laysheet ${laysheetNo}...</div>`;
 
