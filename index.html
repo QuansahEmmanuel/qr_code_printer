@@ -829,7 +829,7 @@
             };
         }
 
-        // Enhanced Paste Functionality (Auto + Manual)
+        // Paste Functionality (Manual only)
         const setupPasteButton = (btnId, inputId) => {
             const input = document.getElementById(inputId);
             const btn = document.getElementById(btnId);
@@ -855,16 +855,6 @@
 
             // Manual paste via icon
             btn.addEventListener('click', performPaste);
-
-            // Auto-paste via clicking empty input
-            input.addEventListener('click', () => {
-                if (input.value === '') {
-                    // Trigger visual "tap" feedback on the button
-                    btn.classList.add('icon-btn-active');
-                    setTimeout(() => btn.classList.remove('icon-btn-active'), 150);
-                    performPaste();
-                }
-            });
         };
 
         setupPasteButton('pasteBinBtn', 'binNumber');
